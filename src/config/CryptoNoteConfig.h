@@ -1,6 +1,7 @@
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2014-2018, The Monero Project
 // Copyright (c) 2018-2020, The TurtleCoin Developers
+// Copyright (c) 2020, The Universal Bit Project
 //
 // Please see the included LICENSE file for more information.
 
@@ -240,7 +241,7 @@ namespace CryptoNote
         const char MINER_CONFIG_FILE_NAME[] = "miner_conf.json";
     } // namespace parameters
 
-    const char CRYPTONOTE_NAME[] = "TurtleCoin";
+    const char CRYPTONOTE_NAME[] = "UniBitX";
 
     const uint8_t TRANSACTION_VERSION_1 = 1;
     const uint8_t TRANSACTION_VERSION_2 = 2;
