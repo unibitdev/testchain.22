@@ -192,7 +192,11 @@ namespace CryptoNote
         assert(m_emissionSpeedFactor > 0 && m_emissionSpeedFactor <= 8 * sizeof(uint64_t));
 
         uint64_t baseReward = (m_moneySupply - alreadyGeneratedCoins) >> m_emissionSpeedFactor;
-
+        
+         if (alreadyGeneratedCoins == 0 && m_genesisBlockReward != 0) {	
+         baseReward = m_genesisBlockReward;	
+        } 
+        
         size_t blockGrantedFullRewardZone = blockGrantedFullRewardZoneByBlockVersion(blockMajorVersion);
         medianSize = std::max(medianSize, blockGrantedFullRewardZone);
         if (currentBlockSize > UINT64_C(2) * medianSize)
@@ -799,6 +803,7 @@ namespace CryptoNote
         m_blocksFileName(currency.m_blocksFileName),
         m_blockIndexesFileName(currency.m_blockIndexesFileName),
         m_txPoolFileName(currency.m_txPoolFileName),
+        m_genesisBlockReward(currency.m_genesisBlockReward),        
         m_zawyDifficultyBlockIndex(currency.m_zawyDifficultyBlockIndex),
         m_zawyDifficultyV2(currency.m_zawyDifficultyV2),
         m_zawyDifficultyBlockVersion(currency.m_zawyDifficultyBlockVersion),
@@ -821,7 +826,7 @@ namespace CryptoNote
 
         moneySupply(parameters::MONEY_SUPPLY);
         emissionSpeedFactor(parameters::EMISSION_SPEED_FACTOR);
-
+genesisBlockReward(parameters::GENESIS_BLOCK_REWARD);       
         rewardBlocksWindow(parameters::CRYPTONOTE_REWARD_BLOCKS_WINDOW);
         zawyDifficultyBlockIndex(parameters::ZAWY_DIFFICULTY_BLOCK_INDEX);
         zawyDifficultyV2(parameters::ZAWY_DIFFICULTY_V2);
@@ -884,7 +889,44 @@ namespace CryptoNote
 
         return tx;
     }
+    
+    Transaction CurrencyBuilder::generateGenesisTransaction(const std::vector<AccountPublicAddress>& targets) {	
+    assert(!targets.empty());	
 
+    CryptoNote::Transaction tx;	
+    tx.inputs.clear();	
+    tx.outputs.clear();	
+    tx.extra.clear();	
+    tx.version = CURRENT_TRANSACTION_VERSION;	
+    tx.unlockTime = m_currency.m_minedMoneyUnlockWindow;	
+    KeyPair txkey = generateKeyPair();	
+    addTransactionPublicKeyToExtra(tx.extra, txkey.publicKey);	
+    BaseInput in;	
+    in.blockIndex = 0;	
+    tx.inputs.push_back(in);	
+    uint64_t block_reward = m_currency.m_genesisBlockReward;	
+    uint64_t target_amount = block_reward / targets.size();	
+    uint64_t first_target_amount = target_amount + block_reward % targets.size();	
+    for (size_t i = 0; i < targets.size(); ++i) {	
+      Crypto::KeyDerivation derivation = boost::value_initialized<Crypto::KeyDerivation>();	
+      Crypto::PublicKey outEphemeralPubKey = boost::value_initialized<Crypto::PublicKey>();	
+      bool r = Crypto::generate_key_derivation(targets[i].viewPublicKey, txkey.secretKey, derivation);	
+      if (r) {}	
+      assert(r == true);	
+//      CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << targets[i].viewPublicKey << ", " << txkey.sec << ")");	
+      r = Crypto::derive_public_key(derivation, i, targets[i].spendPublicKey, outEphemeralPubKey);	
+      assert(r == true);	
+ //     CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", " << i << ", " << targets[i].spendPublicKey << ")");	
+      KeyOutput tk;	
+      tk.key = outEphemeralPubKey;	
+      TransactionOutput out;	
+      out.amount = (i == 0) ? first_target_amount : target_amount;	
+      out.target = tk;	
+      tx.outputs.push_back(out);	
+    }	
+    return tx;	
+}
+    
     CurrencyBuilder &CurrencyBuilder::emissionSpeedFactor(unsigned int val)
     {
         if (val <= 0 || val > 8 * sizeof(uint64_t))
