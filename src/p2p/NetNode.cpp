@@ -475,7 +475,7 @@ namespace CryptoNote
 
     bool NodeServer::init(const NetNodeConfig &config)
     {
-        for (const auto &seed : CryptoNote::SEED_NODES)
+        for (auto seed : CryptoNote::SEED_NODES)
         {
             append_net_address(m_seed_nodes, seed);
         }
