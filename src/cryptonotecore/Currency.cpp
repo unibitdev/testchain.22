@@ -879,6 +879,7 @@ genesisBlockReward(parameters::GENESIS_BLOCK_REWARD);
     Transaction CurrencyBuilder::generateGenesisTransaction()
     {
         CryptoNote::Transaction tx;
+        CryptoNote::AccountPublicAddress ac = boost::value_initialized<CryptoNote::AccountPublicAddress>();
 
         const auto publicViewKey = Constants::NULL_PUBLIC_KEY;
         const auto publicSpendKey = Constants::NULL_PUBLIC_KEY;
