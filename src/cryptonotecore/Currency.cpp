@@ -879,18 +879,19 @@ genesisBlockReward(parameters::GENESIS_BLOCK_REWARD);
     Transaction CurrencyBuilder::generateGenesisTransaction()
     {
         CryptoNote::Transaction tx;
+        CryptoNote::AccountPublicAddress ac = boost::value_initialized<CryptoNote::AccountPublicAddress>();
         
         const auto publicViewKey = Constants::NULL_PUBLIC_KEY;
         const auto publicSpendKey = Constants::NULL_PUBLIC_KEY;
 
         m_currency.constructMinerTx(
-            1, 0, 0, 0, 0, 0, publicViewKey, publicSpendKey, tx
+            1, 0, 0, 0, 0, 0, ac, publicViewKey, publicSpendKey, tx
         );
 
         return tx;
     }
     
-    Transaction CurrencyBuilder::generateGenesisTransaction(const std::vector<PublicKey>& targets) {	
+    Transaction CurrencyBuilder::generateGenesisTransaction(const std::vector<AccountPublicAddress>& targets) {	
     assert(!targets.empty());	
 
     CryptoNote::Transaction tx;	
